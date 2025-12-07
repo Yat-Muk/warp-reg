@@ -30,13 +30,20 @@ jobs:
       uses: actions/setup-go@v4
       with:
         go-version: '1.20'
+        cache: false
 
     - name: Install Dependencies
       run: |
-        echo "Initializing Go Module..."
-        go mod init warp-reg
-        echo "Downloading dependencies..."
+        echo "Check for existing module..."
+        if [ ! -f go.mod ]; then
+          echo "Initializing Go Module..."
+          go mod init warp-reg
+        fi
+        
+        echo "Downloading specific dependencies..."
+        go get golang.org/x/crypto/curve25519
         go mod tidy
+        echo "Dependencies installed."
 
     - name: Build Binary
       env:
@@ -47,6 +54,7 @@ jobs:
         echo "Building for ${{ matrix.goos }}/${{ matrix.goarch }}..."
         go build -v -trimpath -ldflags "-s -w" -o warp-reg-${{ matrix.suffix }} main.go
         
+        echo "Generating checksum..."
         sha256sum warp-reg-${{ matrix.suffix }} > warp-reg-${{ matrix.suffix }}.sha256
 
     - name: Upload Artifacts
