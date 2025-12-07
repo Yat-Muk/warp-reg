@@ -34,16 +34,17 @@ jobs:
 
     - name: Install Dependencies
       run: |
-        echo "Check for existing module..."
-        if [ ! -f go.mod ]; then
-          echo "Initializing Go Module..."
-          go mod init warp-reg
-        fi
+        echo "Initializing Go Module..."
+        rm -f go.mod go.sum
+        go mod init warp-reg
         
-        echo "Downloading specific dependencies..."
-        go get golang.org/x/crypto/curve25519
+        echo "Force downloading crypto library..."
+        go get golang.org/x/crypto@latest
+        
+        echo "Tidying up modules..."
         go mod tidy
-        echo "Dependencies installed."
+        
+        echo "Dependencies ready."
 
     - name: Build Binary
       env:
